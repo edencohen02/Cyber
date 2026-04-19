@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>🎓 StudyMaster Pro - מערכת תרגול למבחנים</title>
+  <link href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <style>
+    :root{--primary:#4361ee;--secondary:#7209b7;--accent:#f72585;--success:#06d6a0;--danger:#ef476f;--warning:#ffd166;--dark:#1a1a2e;--darker:#0f0f1b;--light:#f8f9fa;--gray:#6c757d;--card-bg:#fff;--shadow:0 10px 30px rgba(0,0,0,.15);--gradient:linear-gradient(135deg,#4361ee,#3a0ca3);--radius:16px}
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{font-family:'Assistant',sans-serif;background:var(--darker);color:var(--light);line-height:1.6;min-height:100vh}
+    header{background:var(--gradient);padding:1.2rem;text-align:center;box-shadow:var(--shadow)}
+    .logo{font-size:1.8rem;font-weight:700;display:flex;align-items:center;justify-content:center;gap:.5rem}
+    .logo i{color:#ffd166}
+    .container{max-width:1200px;margin:0 auto;padding:1.5rem}
+    .quiz-nav{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:.7rem;margin-bottom:1.5rem}
+    .quiz-btn{background:var(--card-bg);color:var(--dark);border:2px solid transparent;padding:.85rem;border-radius:var(--radius);font-weight:600;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:.5rem;box-shadow:var(--shadow);font-size:.9rem}
+    .quiz-btn:hover{transform:translateY(-2px);border-color:var(--primary)}
+    .quiz-btn.active{background:var(--gradient);color:#fff;border-color:var(--primary)}
+    .quiz-btn i{font-size:1.1rem}
+    .quiz-container{background:var(--card-bg);color:var(--dark);border-radius:20px;padding:1.8rem;margin-bottom:1.5rem;box-shadow:var(--shadow);display:none;animation:fadeIn .3s}
+    .quiz-container.active{display:block}
+    @keyframes fadeIn{from{opacity:0;transform:translateY(15px)}to{opacity:1;transform:translateY(0)}}
+    .quiz-header{text-align:center;margin-bottom:1.5rem;padding-bottom:1rem;border-bottom:2px solid rgba(0,0,0,.1)}
+    .quiz-title{font-size:1.35rem;color:var(--secondary);margin-bottom:.3rem}
+    .quiz-desc{color:var(--gray);font-size:.95rem}
+    .progress-container{background:rgba(0,0,0,.08);border-radius:8px;height:10px;margin:1.2rem 0;overflow:hidden}
+    .progress-bar{height:100%;background:var(--gradient);border-radius:8px;width:0%;transition:width .3s;position:relative}
+    .progress-bar::after{content:attr(data-progress);position:absolute;right:8px;top:50%;transform:translateY(-50%);color:#fff;font-size:.75rem;font-weight:600}
+    .question-card{background:#fff;border-radius:var(--radius);padding:1.4rem;margin-bottom:1.2rem;box-shadow:0 4px 12px rgba(0,0,0,.08);border-right:4px solid var(--primary)}
+    .question-number{display:inline-block;background:var(--primary);color:#fff;width:28px;height:28px;border-radius:50%;text-align:center;line-height:28px;font-weight:700;margin-left:.6rem;font-size:.85rem}
+    .question-text{font-weight:600;margin:.8rem 0 1rem;font-size:1.05rem;color:var(--dark)}
+    .options-grid{display:grid;gap:.6rem}
+    .option-label{display:flex;align-items:center;padding:.75rem 1rem;background:rgba(67,97,238,.08);border-radius:10px;cursor:pointer;transition:all .2s;border:2px solid transparent}
+    .option-label:hover{background:rgba(67,97,238,.15);border-color:rgba(67,97,238,.3)}
+    .option-label input{margin-left:.8rem;transform:scale(1.15);cursor:pointer}
+    .option-letter{display:inline-flex;align-items:center;justify-content:center;width:26px;height:26px;background:var(--primary);color:#fff;border-radius:50%;font-weight:700;margin-left:.6rem;font-size:.85rem;flex-shrink:0}
+    .option-label input:checked+.option-content .option-letter{background:var(--success);transform:scale(1.05)}
+    .option-content{display:flex;align-items:center;width:100%}
+    .action-buttons{display:flex;gap:.8rem;justify-content:center;margin-top:1.5rem;flex-wrap:wrap}
+    .btn{padding:.85rem 1.8rem;border:none;border-radius:50px;font-weight:600;cursor:pointer;transition:all .3s;display:flex;align-items:center;gap:.5rem;min-width:140px;justify-content:center;font-size:1rem}
+    .btn-primary{background:var(--gradient);color:#fff;box-shadow:0 4px 15px rgba(67,97,238,.4)}
+    .btn-primary:hover{transform:translateY(-2px);box-shadow:0 6px 20px rgba(67,97,238,.6)}
+    .btn-secondary{background:#fff;color:var(--primary);border:2px solid var(--primary)}
+    .btn-secondary:hover{background:var(--primary);color:#fff}
+    .btn-success{background:var(--success);color:#fff}
+    .results-container{text-align:center;padding:1.8rem;display:none}
+    .results-container.active{display:block;animation:fadeIn .4s}
+    .score-display{font-size:3.5rem;font-weight:700;background:var(--gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin:.8rem 0}
+    .score-message{font-size:1.2rem;margin-bottom:1.2rem;font-weight:500}
+    .score-breakdown{display:flex;justify-content:center;gap:1.5rem;margin:1.2rem 0;flex-wrap:wrap}
+    .breakdown-item{text-align:center}
+    .breakdown-value{font-size:1.8rem;font-weight:700;display:block}
+    .breakdown-label{color:var(--gray);font-size:.9rem}
+    .correct{color:var(--success)}.incorrect{color:var(--danger)}
+    .review-section{margin-top:1.5rem;text-align:right}
+    .review-title{font-size:1.2rem;margin-bottom:.8rem;color:var(--secondary);display:flex;align-items:center;gap:.4rem}
+    .review-item{background:rgba(255,255,255,.8);border-radius:10px;padding:1rem;margin-bottom:.8rem;border-right:4px solid var(--accent)}
+    .review-item.correct{border-right-color:var(--success);background:rgba(6,214,160,.1)}
+    .review-item.incorrect{border-right-color:var(--danger);background:rgba(239,71,111,.1)}
+    .review-question{font-weight:600;margin-bottom:.4rem;color:var(--dark);font-size:.95rem}
+    .review-answer{font-size:.9rem;color:var(--gray)}
+    .review-answer.correct-answer{color:var(--success);font-weight:500}
+    .review-answer.user-answer{color:var(--danger);text-decoration:line-through;margin-left:.4rem}
+    footer{text-align:center;padding:1.2rem;color:rgba(255,255,255,.7);font-size:.85rem;margin-top:1.5rem;border-top:1px solid rgba(255,255,255,.1)}
+    footer a{color:#ffd166;text-decoration:none}
+    @media(max-width:768px){.logo{font-size:1.5rem}.quiz-container{padding:1.4rem}.question-card{padding:1.2rem}.btn{padding:.75rem 1.5rem;min-width:130px}.score-display{font-size:2.8rem}}
+    @media(max-width:480px){.quiz-nav{grid-template-columns:1fr}.action-buttons{flex-direction:column;align-items:center}.btn{width:100%;max-width:280px}}
+    .confetti{position:fixed;width:8px;height:8px;background:var(--success);border-radius:50%;animation:confetti-fall 2.5s ease-in-out forwards;pointer-events:none;z-index:1000}
+    @keyframes confetti-fall{0%{transform:translateY(-80px) rotate(0);opacity:1}100%{transform:translateY(100vh) rotate(720deg);opacity:0}}
+  </style>
+</head>
+<body>
+  <header><div class="logo"><i class="fas fa-graduation-cap"></i><span>StudyMaster Pro</span></div></header>
+  <div class="container">
+    <div class="quiz-nav" id="nav"></div>
+    <div id="quizzes"></div>
+  </div>
+  <footer><p>🎓 StudyMaster Pro &copy; 2024</p><p>פרויקט ב-<a href="https://github.com/edencohen02/Study.git" target="_blank"><i class="fab fa-github"></i> GitHub</a></p></footer>
+
+  <script>
+const quizzes = {
+  p1:{title:"📊 מצגת 1: מבוא לאבטחת מידע וסייבר",desc:"20 שאלות על מושגי יסוד, CIA, ניהול סיכונים",q:[
+    {question:"מהו ההגדרה הנכונה של \"אבטחת מידע\"?",options:["הגנה על חומרה בלבד","הגנה על מידע מפני גישה, שינוי, השמדה או חשיפה לא מורשית","הצפנת קבצים בלבד","ניהול רשתות תקשורת"],correct:1},
+    {question:"מה משמעות האות C במודל CIA?",options:["Control","Cyber","Confidentiality (סודיות)","Connection"],correct:2},
+    {question:"הנוסחה לחישוב סיכון (Risk) היא:",options:["Risk = Threat + Vulnerability","Risk = Impact × Probability","Risk = Asset / Control","Risk = Attack × Defense"],correct:1},
+    {question:"מהו \"נכס\" (Asset) בהקשר של אבטחת מידע?",options:["רק כסף ומזומנים","כל דבר בעל ערך שיש להגן עליו","רק תוכנות וחומרה","רק מידע דיגיטלי"],correct:1},
+    {question:"איזה מהבאים הוא דוגמה ל\"איום\" (Threat)?",options:["חומת אש לא מעודכנת","האקר המנסה לפרוץ למערכת","סיסמה חלשה","גיבוי שלא בוצע"],correct:1},
+    {question:"מהי \"פגיעות\" (Vulnerability)?",options:["אדם שמבצע מתקפה","נקודת תורפה המאפשרת לאיום לנצל סכנה","נזק שנגרם לאחר מתקפה","כלי הגנה טכנולוגי"],correct:1},
+    {question:"איזה סוג מתקפה כולל האזנה פסיבית ללא שינוי נתונים?",options:["Active Attack","Passive Attack","Insider Attack","DDoS Attack"],correct:1},
+    {question:"מהו ה-\"Cyber Kill Chain\"?",options:["כלי הצפנה מתקדם","מודל המתאר את שלבי המתקפה הסייברנית","פרוטוקול רשת חדש","שיטת גיבוי נתונים"],correct:1},
+    {question:"איזה מהבאים אינו חלק משרשרת ההפצצה הסייברנית?",options:["Reconnaissance","Weaponization","Compilation","Delivery"],correct:2},
+    {question:"מה משמעות RTO?",options:["Recovery Time Objective - הזמן המרבי להחזרת המערכת לפעולה","Risk Threat Operation","Remote Transfer Online","Real Time Optimization"],correct:0},
+    {question:"מה משמעות RPO?",options:["Recovery Point Objective - כמות הנתונים המרבית שניתן לאבד","Risk Prevention Operation","Remote Protocol Online","Real Protection Objective"],correct:0},
+    {question:"איזה מהבאים הוא דוגמה ל-APT?",options:["וירוס אקראי","מתקפה ממוקדת ומתוכננת היטב על ידי גורם מתקדם","התקפת מניעת שירות פשוטה","הודעת דיוג בסיסית"],correct:1},
+    {question:"מהו \"Social Engineering\"?",options:["תכנון רשתות חברתיות","מניפולציה פסיכולוגית להשגת מידע רגיש","פיתוח אפליקציות חברתיות","ניתוח נתונים חברתיים"],correct:1},
+    {question:"איזה פרוטוקול נחשב לא מאובטח להעברת סיסמאות?",options:["HTTPS","SSH","Telnet","TLS"],correct:2},
+    {question:"מהי מטרת מתקפת \"Phishing\"?",options:["להאט את הרשת","לגרום למשתמש לחשוף מידע רגיש","למחוק קבצי מערכת","להצפין נתונים"],correct:1},
+    {question:"איזה עקרון במודל CIA מתייחס לזמינות המידע בעת הצורך?",options:["Confidentiality","Integrity","Availability","Authentication"],correct:2},
+    {question:"מהו \"Insider Threat\"?",options:["מתקפה ממדינה זרה","איום המגיע מאדם בתוך הארגון","וירוס שהורד מהאינטרנט","תקלה בחומרה"],correct:1},
+    {question:"איזה מהבאים הוא דוגמה ל\"איום טכנולוגי\"?",options:["עובד ממורמר","רעידת אדמה","באג בתוכנה","מתחרה עסקי"],correct:2},
+    {question:"מהו ההבדל העיקרי בין Cyber Security ל-Information Security?",options:["אין הבדל כלל","Cyber Security מתמקד במרחב הדיגיטלי בלבד","Information Security רחב פחות","Cyber Security עוסק רק בחומרה"],correct:1},
+    {question:"איזה מהבאים אינו שלב בסיסי בניהול סיכונים?",options:["זיהוי נכסים","הערכת סיכונים","יישום בקרות","מחיקת כל הנתונים"],correct:3}
+  ]},
+
+  p2:{title:"📊 מצגת 2: תורת ההגנה בסייבר - תיאוריה",desc:"20 שאלות על עקרונות הגנה, מסגרות וניהול סיכונים",q:[
+    {question:"לפי מערך הסייבר הלאומי, מהו הסף הכספי המפריד בין היררכיה א' לב'?",options:["1 מיליון ש\"ח","3 מיליון ש\"ח","5 מיליון ש\"ח","10 מיליון ש\"ח"],correct:2},
+    {question:"מהו \"Attack Surface\"?",options:["משטח העבודה של אנליסט אבטחה","סך כל נקודות הגישה האפשריות למערכת שדרכן יכול תקיף לנסות לחדור","ממשק ניהול של חומת אש","תוכנת סריקת פגיעויות"],correct:1},
+    {question:"איזה עיקרון אינו חלק מ\"עשרת הדיברות\" להגנת סייבר לעסקים קטנים?",options:["ניהול הרשאות","גיבוי נתונים","הצפנת כל הדיסקים באופן אוטומטי ללא בקרה","עדכון תוכנות ואנטי-וירוס"],correct:2},
+    {question:"מהו היתרון המרכזי של שימוש ב-\"Compensatory Control\"?",options:["הוא זול יותר מכל פתרון אחר","הוא מספק הגנה חלופית כאשר בקרה ראשית אינה ישימה","הוא מבטל את הצורך בבקרות אחרות","הוא עובד רק בסביבות ענן"],correct:1},
+    {question:"מהו האתגר המרכזי בהגנה מול תקיפה?",options:["לתוקף מספיק לחדור דרך נקודה אחת, בעוד המגן חייב להגן על כל הנקודות","למגן יש יותר משאבים אך פחות ידע","לתוקף אין מגבלות זמן","המגן חייב לתקוף ראשון"],correct:0},
+    {question:"מהו \"Zero Trust\" בהקשר של אבטחת מידע?",options:["מודל שאינו סומך על אף גורם, פנימי או חיצוני, ללא אימות","מודל שאינו משתמש בסיסמאות","מודל המאפשר גישה חופשית לכולם","מודל המתעלם מאיומים פנימיים"],correct:0},
+    {question:"איזה מסגרת עבודה מתמקדת בניהול סיכוני סייבר באמצעות 5 שלבים: Identify, Protect, Detect, Respond, Recover?",options:["ISO 27001","NIST Cybersecurity Framework","PCI DSS","COBIT"],correct:1},
+    {question:"מהו התפקיד העיקרי של CISO?",options:["ניהול תקציב החברה","פיתוח תוכנות חדשות","הגדרה ויישום של אסטרטגיית אבטחת מידע בארגון","ניהול משאבי אנוש"],correct:2},
+    {question:"איזה רגולציה אירופית מגנה על פרטיות נתונים אישיים?",options:["HIPAA","SOX","GDPR","FISMA"],correct:2},
+    {question:"מהו ההבדל בין KPI ל-KRI?",options:["KPI מודד ביצועים, KRI מודד סיכונים","KPI הוא טכני, KRI הוא ניהולי","אין הבדל","KRI מודד רווחיות, KPI מודד אבטחה"],correct:0},
+    {question:"מהי מטרת \"תרגול עומק\" (Deep Implementation)?",options:["לבצע בדיקה חד-פעמית","לעבור מגישה בינארית לגישה מדורגת ומדויקת יותר","להצפין את כל הנתונים בעומק הדיסק","לבצע סריקת רשת יסודית"],correct:1},
+    {question:"איזה מהבאים אינו אסטרטגיה לטיפול בסיכון?",options:["טיפול/הפחתה (Mitigate)","קבלה (Accept)","העברה (Transfer)","התעלמות (Ignore)"],correct:3},
+    {question:"מהו \"Rogue Employee\" בהקשר של איומי פנים?",options:["עובד חדש שעדיין לומד את המערכת","עובד המשתמש בהרשאותיו לרעה או נגד הארגון","עובד שעזב את החברה","עובד זמני"],correct:1},
+    {question:"לפי מודל ניהול הסיכונים, Impact=4 ו-Probability=0.5:",options:["סיכון נמוך","סיכון בינוני","סיכון גבוה (2.0)","סיכון קריטי"],correct:2},
+    {question:"מהו היתרון של \"הגנה בשכבות\" (Defense in Depth)?",options:["היא זולה יותר","היא פשוטה יותר לתחזוקה","היא מספקת הגנה גם אם שכבה אחת נפרצת","היא דורשת פחות משאבים"],correct:2},
+    {question:"איזה סוג בקרה הוא \"הדרכת עובדים בנושא אבטחת מידע\"?",options:["בקרה טכנית","בקרה פיזית","בקרה אדמיניסטרטיבית/ניהולית","בקרה אוטומטית"],correct:2},
+    {question:"מהי מטרת \"תוכנית התאוששות מאסון\" (DRP)?",options:["למנוע מתקפות סייבר","להבטיח חזרה מהירה לפעילות תקינה לאחר אירוע","להעניש תוקפים","לגבות נתונים בלבד"],correct:1},
+    {question:"מהו \"Least Privilege\"?",options:["מתן כל ההרשאות למנהלי מערכת","מתן הרשאות מינימליות הנדרשות לביצוע המשימה","הסרת כל ההרשאות ממשתמשים","מתן הרשאות זמניות לכולם"],correct:1},
+    {question:"איזה מהבאים הוא דוגמה ל\"איום פיזי\" שעלול להשפיע על אבטחת מידע?",options:["מתקפת DDoS","גניבת שרת פיזי מהחווה","דיוג באימייל","ניצול פגיעות בתוכנה"],correct:1},
+    {question:"מהו הסיכון העיקרי בגיבויים שלא נבדקים?",options:["הם תופסים מקום בדיסק","הם עלולים להיות לא שמישים בעת הצורך","הם מאטים את המערכת","הם חושפים מידע לתוקפים"],correct:1}
+  ]},
+
+  p3:{title:"📊 מצגת 3: תורת ההגנה בסייבר - פרקטיקה",desc:"20 שאלות על גופי הגנה, כלים, תגובה לאירועים",q:[
+    {question:"איזה גוף אחראי על הגנת המרחב הסייבר הלאומי של ישראל?",options:["משטרת ישראל","מערך הסייבר הלאומי","משרד הביטחון בלבד","הרשות להגנת הפרטיות"],correct:1},
+    {question:"מה היה היעד העיקרי של מתקפת Stuxnet?",options:["גניבת נתוני אשראי","שיבוש מערכות שליטה תעשייתיות (SCADA) במתקני גרעין","הצפנת מחשבים אישיים","גניבת זהויות דיגיטליות"],correct:1},
+    {question:"איזה שלב במסגרת NIST עוסק בזיהוי נכסים וסיכונים?",options:["Protect","Detect","Identify","Respond"],correct:2},
+    {question:"מהו \"Zero Day\" בהקשר של אבטחת מידע?",options:["יום ללא מתקפות","פגיעות שטרם פורסם לה תיקון ויכולה להיות מנוצלת","תאריך תפוגה של רישיון תוכנה","יום הגיבוי השבועי"],correct:1},
+    {question:"איזה גוף אחראי על אכיפת חוק הגנת הפרטיות בישראל?",options:["מערך הסייבר הלאומי","הרשות להגנת הפרטיות (במשרד המשפטים)","משטרת הסייבר","משרד התקשורת"],correct:1},
+    {question:"מהי מטרת \"הונאה והטעיה\" (Denial and Deception) באבטחת סייבר?",options:["לשפר את מהירות הרשת","להטעות את התוקף ולגרום לו לבזבז משאבים או לחשוף את עצמו","למחוק קבצים חשובים","להצפין את כל התעבורה"],correct:1},
+    {question:"מהו \"Honeypot\"?",options:["מערכת מפתה שנועדה למשוך תוקפים וללמוד את שיטותיהם","סיסמה חזקה במיוחד","כלי לגיבוי נתונים","סוג של חומת אש"],correct:0},
+    {question:"איזה ארגון פרסם את מסגרת העבודה לאבטחת סייבר עם 5 הפונקציות?",options:["ISO","NIST","CIS","OWASP"],correct:1},
+    {question:"מהי המשמעות של \"Fail Open\" בהקשר של אבטחה?",options:["המערכת נסגרת לחלוטין בעת תקלה","המערכת ממשיכה לפעול עם פחות אבטחה כדי לשמור על זמינות","כל הדלתות הפיזיות נפתחות","הסיסמאות מתאפסות"],correct:1},
+    {question:"איזה סוג ניתוח משווה בין ביצועים נוכחיים ליעדים שהוגדרו?",options:["KRI","KPI","ROI","RTO"],correct:1},
+    {question:"מהו \"Air Gap\" בהקשר של אבטחת מידע?",options:["חיבור אינטרנט מהיר","הפרדה פיזית מוחלטת בין מערכת רגישה לרשתות חיצוניות","סוג של הצפנה","כלי לניטור רשת"],correct:1},
+    {question:"איזה שלב בשרשרת ההפצצה עוסק בהפעלת השליטה מרחוק על המערכת הנגועה?",options:["Delivery","Exploitation","Command & Control","Weaponization"],correct:2},
+    {question:"מהו התפקיד של CERT-IL?",options:["להעניק תעודות אבטחה","טיפול ואיתות על אירועי סייבר בזמן אמת בישראל","פיקוח על חברות אבטחה פרטיות","פיתוח תקני הצפנה"],correct:1},
+    {question:"מהי \"הכלה\" (Containment) בשלב התגובה לאירוע סייבר?",options:["מחיקת כל הנתונים הנגועים","מניעת התפשטות האירוע לרכיבים נוספים במערכת","דיווח לתקשורת","תביעה משפטית נגד התוקף"],correct:1},
+    {question:"איזה עקרון מנחה את \"הגנה מותאמת סיכון\"?",options:["כל הארגונים צריכים את אותה רמת אבטחה","רמת ההגנה צריכה להיות פרופורציונלית לסיכון ולנזק הפוטנציאלי","רק ארגונים גדולים צריכים אבטחה","אבטחה צריכה להיות זולה ככל האפשר"],correct:1},
+    {question:"מהו \"Threat Intelligence\"?",options:["כלי להצפנת נתונים","מידע מנותח על איומים, תוקפים ושיטות פעולה שמסייע בהיערכות","מערכת לניהול סיסמאות","פרוטוקול תקשורת מאובטח"],correct:1},
+    {question:"איזה סוג בדיקה בודק את יכולת הארגון להתמודד עם מתקפה בפועל?",options:["סריקת פגיעויות","תרגיל סייבר / סימולציה","ביקורת תיעוד","סקר עובדים"],correct:1},
+    {question:"מהו \"Indicator of Compromise\" (IoC)?",options:["מדד לרווחיות הארגון","עדות דיגיטלית שעשויה להצביע על חדירה או מתקפה","כלי לניהול פרויקטים","סוג של גיבוי"],correct:1},
+    {question:"איזה עיקרון חשוב בניהול אירועי סייבר הוא \"Lessons Learned\"?",options:["להעניש את האחראים לתקרית","לנתח את האירוע כדי לשפר תהליכים ולהימנע מאירועים דומים בעתיד","למחוק את כל הלוגים","להחליף את כל הצוות הטכני"],correct:1},
+    {question:"מהו היתרון של \"ניטור רציף\" (Continuous Monitoring)?",options:["הוא זול יותר מבדיקות תקופתיות","הוא מאפשר זיהוי ותגובה מהירים יותר לאיומים","הוא מבטל את הצורך בצוות אבטחה","הוא פשוט יותר ליישום"],correct:1}
+  ]},
+
+  p4:{title:"📊 מצגת 4: אבטחת מידע בשכבה הפיזית",desc:"20 שאלות על אבטחה פיזית, TEMPEST, חיישנים, חדרים",q:[
+    {question:"באיזו שכבה של מודל OSI עוסקת המצגת?",options:["שכבה 7 - Application","שכבה 1 - Physical","שכבה 4 - Transport","שכבה 3 - Network"],correct:1},
+    {question:"מהו \"Weakest Link Principle\" בהקשר של אבטחה פיזית?",options:["החוליה החזקה ביותר קובעת את רמת האבטחה","החוליה החלשה ביותר קובעת את רמת האבטחה הכוללת","כל החוליות צריכות להיות זהות","אין חשיבות לסדר החוליות"],correct:1},
+    {question:"איזה סוג כבל פחות רגיש להאזנה אלקטרומגנטית?",options:["UTP","Fiber Optic (סיבים אופטיים)","Coaxial","STP"],correct:1},
+    {question:"מהו \"TEMPEST\"?",options:["סופת רעמים","תקן להגנה מפני דליפת מידע באמצעות קרינה אלקטרומגנטית","סוג של וירוס","פרוטוקול הצפנה"],correct:1},
+    {question:"איזה מהבאים הוא דוגמה למתקפת \"Interruption\" בשכבה הפיזית?",options:["האזנה לכבל רשת","ניתוק פיזי של כבל תקשורת","שינוי נתונים במעבר","הזרמת נתונים מזויפים"],correct:1},
+    {question:"מהו \"Rogue Access Point\"?",options:["נקודת גישה מאושרת על ידי הארגון","נקודת גישה אלחוטית שהותקנה ללא אישור ועלולה לשמש לחדירה","חומת אש מתקדמת","שרת גיבוי"],correct:1},
+    {question:"איזה אמצעי הגנה פיזי מומלץ למניעת גניבת לפטופ עם מידע רגיש?",options:["השארתו על השולחן עם פתק","שימוש בהצפנת דיסק מלא (FDE) ונעילה פיזית","הסרת הסוללה","מחיקת הקבצים בלבד"],correct:1},
+    {question:"מהו \"Biometric Access Control\"?",options:["בקרת גישה באמצעות סיסמה","בקרת גישה באמצעות מאפיינים ביולוגיים ייחודיים (טביעת אצבע, זיהוי פנים)","בקרת גישה באמצעות כרטיס מגנטי","בקרת גישה באמצעות שמירה אנושית"],correct:1},
+    {question:"איזה סוג חיישן יכול לזהות תנועה לא מורשית בשטח הארגון?",options:["חיישן טמפרטורה","חיישן תנועה (Motion Sensor)","חיישן עשן","חיישן לחות"],correct:1},
+    {question:"מהי מטרת \"Physical Segmentation\"?",options:["לחבר את כל הרשתות יחד","להפריד פיזית בין רשתות או אזורים בעלי רגישויות שונות","להצפין את כל התעבורה","לאחד את כל השרתים בחדר אחד"],correct:1},
+    {question:"איזה אמצעי הגנה מומלץ להגנה מפני \"Wiretapping\"?",options:["שימוש בכבלים מוגנים (Shielded) והצפנת התעבורה","הארכת הכבלים","שימוש בצבעים שונים לכבלים","הנחת הכבלים על הרצפה"],correct:0},
+    {question:"מהו \"Evil Maid Attack\"?",options:["מתקפה על מלונות","מתקפה בה תוקף עם גישה פיזית קצרה מתקין תוכנה זדונית","מתקפת דיוג על עובדי ניקיון","סוג של הצפנה"],correct:1},
+    {question:"איזה עיקרון קובע שיש לתת גישה פיזית רק למי שצריך אותה?",options:["Need-to-Know","Need-to-Access","Least Effort","Maximum Access"],correct:1},
+    {question:"מהו \"UPS\" בהקשר של אבטחה פיזית?",options:["חברת שליחויות","מקור כוח בלתי פוסק להבטחת זמינות המערכות","פרוטוקול אבטחה","סוג של חומת אש"],correct:1},
+    {question:"איזה סוג נזק יכול להיגרם מ\"תקלה חשמלית\" בחדר שרתים?",options:["רק נזק פיזי לחומרה","אובדן נתונים, השבתת שירותים ונזק פיזי","רק האטת הרשת","אין נזק משמעותי"],correct:1},
+    {question:"מהי מטרת \"Tamper-Evident Seals\"?",options:["לשפר את המראה האסתטי","לספק עדות ויזואלית לניסיון פתיחה או התערבות לא מורשית","להצפין את הציוד","לקרר את הציוד"],correct:1},
+    {question:"איזה אמצעי ניטור פיזי מספק תיעוד ויזואלי של אירועים?",options:["גלאי עשן","מצלמות אבטחה (CCTV)","חיישן לחות","מערכת כיבוי אש"],correct:1},
+    {question:"מהו \"Insider Physical Threat\"?",options:["איום פיזי מחוץ לארגון","איום פיזי מאדם עם גישה מורשית לארגון","איום של וירוס על חומרה","איום של מזג אוויר קיצוני"],correct:1},
+    {question:"איזה תקן בינלאומי מתייחס גם לאבטחה פיזית?",options:["ISO 9001","ISO 27001","ISO 14001","ISO 45001"],correct:1},
+    {question:"מהו היתרון של \"גנרטור גיבוי\" בחדר שרתים?",options:["הוא חוסך בחשמל","הוא מבטיח המשכיות פעילות בעת הפסקת חשמל ממושכת","הוא משפר את מהירות הרשת","הוא מצפין את הנתונים"],correct:1}
+  ]},
+
+  p5:{title:"📊 מצגת 5: שכבת הנתונים והרשת",desc:"20 שאלות על ARP, MAC, TCP/IP, מתקפות רשת",q:[
+    {question:"באיזו שכבה של מודל TCP/IP פועל פרוטוקול ARP?",options:["Application","Transport","Network","Data-Link"],correct:3},
+    {question:"מהו \"ARP Spoofing\"?",options:["עדכון לגיטימי של טבלת ARP","מתקפה בה תוקף שולח תגובות ARP מזויפות כדי לקשר בין כתובת ה-IP שלו לכתובת MAC של קורבן","הצפנת תעבורת ARP","ניטור תקין של רשת"],correct:1},
+    {question:"איזה פרוטוקול אינו כולל אימות מובנה של כתובת המקור?",options:["TCP","IP","HTTPS","SSH"],correct:1},
+    {question:"מהו \"MAC Flooding\"?",options:["עדכון טבלת MAC בסקוויץ'","מתקפה המציפה סקוויץ' בכתובות MAC מזויפות כדי לגרום לו לפעול כ-Hub","גיבוי של טבלת MAC","ניטור תעבורת MAC"],correct:1},
+    {question:"איזה סוג מתקפה מנצל את העובדה ש-UDP הוא Connectionless?",options:["SYN Flood","UDP Flood","Session Hijacking","TCP Reset"],correct:1},
+    {question:"מהו \"IP Spoofing\"?",options:["עדכון כתובת IP באופן חוקי","זיוף כתובת ה-IP של המקור בהודעות רשת כדי להסתיר את זהות התוקף","הצפנת כתובות IP","הקצאה דינמית של כתובות IP"],correct:1},
+    {question:"איזה שלב ב-\"TCP Handshake\" שולח ה-Client ראשון?",options:["ACK","SYN","FIN","RST"],correct:1},
+    {question:"מהו \"SYN Flood Attack\"?",options:["מתקפה המציפה שרת בבקשות SYN ללא השלמת החיבור כדי לגרום ל-DoS","עדכון מהיר של חיבורי TCP","הצפנת חיבורי SYN","ניטור חיבורי רשת"],correct:0},
+    {question:"איזה פרוטוקול רגיש במיוחד ל-\"Sniffing\" כאשר אינו מוצפן?",options:["HTTPS","HTTP","SSH","TLS"],correct:1},
+    {question:"מהו \"Session Hijacking\"?",options:["יצירת סשן חדש","השתלטות על סשן פעיל של משתמש אחר כדי להתחזות לו","סיום סשן בצורה מאובטחת","הצפנת סשן"],correct:1},
+    {question:"איזה כלי פופולרי לניתוח תעבורת רשת וזיהוי מתקפות?",options:["Microsoft Word","Wireshark","Adobe Photoshop","Excel"],correct:1},
+    {question:"מהו \"Promiscuous Mode\" בכרטיס רשת?",options:["מצב בו הכרטיס מקבל רק תעבורה המיועדת אליו","מצב בו הכרטיס מקבל את כל התעבורה ברשת, גם אם אינה מיועדת אליו","מצב חיסכון בחשמל","מצב הצפנה"],correct:1},
+    {question:"איזה סוג מתקפה מנצל פגיעות בפרוטוקול ICMP?",options:["Smurf Attack","Phishing","SQL Injection","Cross-Site Scripting"],correct:0},
+    {question:"מהו \"Fragmentation Attack\"?",options:["פיצול תקין של חבילות לשיפור ביצועים","ניצול פיצול חבילות כדי לעקוף מנגנוני אבטחה כמו IDS/Firewall","הצפנת חבילות מפוצלות","גיבוי של חבילות נתונים"],correct:1},
+    {question:"איזה פרוטוקול אחראי על הקצאת כתובות IP באופן דינמי?",options:["DNS","DHCP","ARP","ICMP"],correct:1},
+    {question:"מהו \"DHCP Spoofing\"?",options:["עדכון לגיטימי של שרת DHCP","התקנת שרת DHCP מזויף כדי להפנות קלינטים לרשת זדונית","הצפנת בקשות DHCP","ניטור הקצאות IP"],correct:1},
+    {question:"איזה עקרון במודל CIA נפגע במתקפת \"Sniffing\" על תעבורה לא מוצפנת?",options:["Availability","Integrity","Confidentiality","Authentication"],correct:2},
+    {question:"מהו \"Man-in-the-Middle Attack\"?",options:["מתקפה על מנהלי רשת","מתקפה בה התוקף מציב את עצמו בין שני צדדים מתקשרים","מתקפה על שרת מרכזי","מתקפה על כרטיס אשראי"],correct:1},
+    {question:"איזה פרוטוקול מספק אימות והצפנה לתעבורת רשת?",options:["HTTP","Telnet","IPsec","FTP"],correct:2},
+    {question:"מהי ההמלצה הטובה ביותר להגנה מפני מתקפות בשכבות 2-3?",options:["להתעלם מהן","ליישם הגנה בשכבות (Defense in Depth) הכוללת הצפנה, ניטור ובקרות גישה","להשתמש רק בסיסמאות חזקות","לנתק את הרשת מהאינטרנט"],correct:1}
+  ]},
+
+  p6:{title:"📊 מצגת 6+7: הגנה בשכבות - היקפית ופנימית",desc:"20 שאלות על Firewalls, DMZ, IDS/IPS, Zero Trust",q:[
+    {question:"מהו העיקרון המרכזי של \"הגנה בשכבות\" (Defense in Depth)?",options:["הסתמכות על חומת אש אחת חזקה","שימוש במספר שכבות הגנה שונות כך שאם אחת נפרצת, האחרות עדיין מגנות","הצפנת כל הנתונים בלבד","ניטור רשת בלבד"],correct:1},
+    {question:"מה היה הכשל המרכזי בפרשת ה-Target Breach של 2013?",options:["חסרו לחברה כלי הגנה טכנולוגיים","הכלים היו קיימים אך לא נוהלו, עודכנו או נותחו כראוי","התוקפים השתמשו בשיטות חדשות שלא היו מוכרות","החברה לא גיבתה את הנתונים"],correct:1},
+    {question:"מהו ההבדל העיקרי בין Packet Filtering ל-Stateful Firewall?",options:["Packet Filtering מהיר יותר","Stateful Firewall עוקב אחר מצב החיבור (State) ומאפשר החלטות הקשריות","Packet Filtering תומך בהצפנה","אין הבדל משמעותי"],correct:1},
+    {question:"מהו תפקידו של WAF (Web Application Firewall)?",options:["הגנה על רשתות פנימיות בלבד","סינון תעבורת HTTP/HTTPS והגנה מפני התקפות יישומון כמו SQL Injection ו-XSS","הצפנת תעבורת רשת","ניהול זהויות משתמשים"],correct:1},
+    {question:"מהי מטרת ה-DMZ (Demilitarized Zone)?",options:["לאחסן גיבויים בלבד","לבודד פיזית את השרתים מהאינטרנט","ליצור אזור חיץ בין הרשת הפנימית לאינטרנט לשירותים חשופים","להצפין את כל התעבורה הנכנסת"],correct:2},
+    {question:"מה ההבדל בין IDS ל-IPS?",options:["IDS חוסם התקפות, IPS רק מזהה","IDS מזהה ומתריע, IPS מזהה, מתריע וגם חוסם באופן אקטיבי","IDS פועל בשכבה הפיזית, IPS בשכבת היישום","אין הבדל, אלו שמות נרדפים"],correct:1},
+    {question:"מהו \"Single Point of Failure\" ומדוע חשוב להימנע ממנו?",options:["נקודה אחת שכשלה גורמת לכשל של כל המערכת; חשוב ליצור יתירות","שרת יחיד שאינו מוצפן","משתמש יחיד עם הרשאות ניהול","סיסמה יחידה לכל המערכת"],correct:0},
+    {question:"איזו התקפה מנצלת את העובדה ש-UDP הוא Connectionless?",options:["SYN Flood","UDP Flood ו-Amplification Attacks","ARP Poisoning","XSS"],correct:1},
+    {question:"מהו Zero Trust במודל אבטחה?",options:["מודל שאינו סומך על אף גורם, פנימי או חיצוני, ללא אימות מתמיד","מודל שאינו משתמש בסיסמאות כלל","מודל המאפשר גישה חופשית לכולם","מודל המתעלם מאיומים פנימיים"],correct:0},
+    {question:"מהו ההבדל בין התקפת Phishing ל-Spear Phishing?",options:["Phishing כללית, Spear Phishing ממוקדת ומותאמת אישית","Phishing דרך טלפון, Spear Phishing דרך אימייל","אין הבדל","Spear Phishing פחות מסוכנת"],correct:0},
+    {question:"מהי מטרת התקפת \"Man-in-the-Middle\" (MITM)?",options:["להשבית שרת מרכזי","ליירט, לקרוא ואף לשנות תעבורה בין שני צדדים ללא ידיעתם","להצפין נתונים גנובים","ליצור גיבוי של נתונים"],correct:1},
+    {question:"איזה סוג התקפה מנצל פגיעות בפרוטוקול ARP?",options:["DNS Spoofing","ARP Poisoning/Spoofing","ICMP Flood","Buffer Overflow"],correct:1},
+    {question:"מהו \"Fail-Open\" בהקשר של אבטחה?",options:["המערכת נסגרת לחלוטין בעת תקלה","המערכת ממשיכה לפעול עם פחות אבטחה כדי לשמור על זמינות","כל הדלתות הפיזיות נפתחות","הסיסמאות מתאפסות"],correct:1},
+    {question:"מהי מטרת \"Hardening\" של מערכת?",options:["להגביר את מהירות העיבוד","לצמצם את משטח ההתקפה על ידי הסרת שירותים מיותרים ועדכון הגדרות אבטחה","להצפין את כל הדיסקים","ליצור משתמשים חדשים"],correct:1},
+    {question:"איזה פרוטוקול מספק אימות והצפנה לתעבורת רשת בשכבת הרשת?",options:["HTTP","Telnet","IPsec","FTP"],correct:2},
+    {question:"מהו ההבדל בין התקפת DoS ל-DDoS?",options:["DoS ממקור אחד, DDoS ממקורות רבים ומבוזרים (Botnet)","DoS מסוכן יותר מ-DDoS","DDoS פועל רק על רשתות אלחוטיות","אין הבדל"],correct:0},
+    {question:"מהו \"Lateral Movement\" ומדוע הוא מסוכן?",options:["תנועה אנכית בין רמות ניהול","תנועה אופקית של תוקף בתוך הרשת הפנימית לאחר חדירה ראשונית","העברת נתונים החוצה מהארגון","גיבוי נתונים בין שרתים"],correct:1},
+    {question:"איזה כלי משמש לניתוח תעבורת רשת וזיהוי התקפות כמו Sniffing?",options:["Microsoft Word","Wireshark","Adobe Photoshop","Excel"],correct:1},
+    {question:"מהי מטרת שימוש ב-\"Honeypot\" או \"Honeytoken\"?",options:["לאחסן נתונים רגישים בצורה מאובטחת","למשוך תוקפים למערכת מדומה כדי ללמוד את שיטותיהם ולזהות חדירות","לגבות נתונים בצורה מוצפנת","להאיץ את ביצועי הרשת"],correct:1},
+    {question:"מהו ההבדל בין הגנה היקפית (Perimeter) להגנה פנימית (Internal)?",options:["הגנה היקפית מגנה על הגבול בין הרשת הפנימית לחיצונית, הגנה פנימית מגנה על נכסים בתוך הרשת","הגנה היקפית יקרה יותר","הגנה פנימית אינה נחוצה אם יש הגנה היקפית","אין הבדל משמעותי"],correct:0}
+  ]},
+
+  p7:{title:"📊 מצגת 8: מבוא לאבטחת ענן",desc:"20 שאלות על Cloud, Shared Responsibility, IaaS/PaaS/SaaS",q:[
+    {question:"מהו ההבדל המרכזי בין מודל IT מסורתי (On-Prem) לענן?",options:["בענן אין צורך בחיבור לאינטרנט","בענן הארגון רוכש שירותים לפי דרישה ומשלם רק על מה שצורך, ללא ניהול תשתית פיזית","בענן האבטחה פחות חשובה","במודל המסורתי אין צורך בגיבויים"],correct:1},
+    {question:"מהו מודל האחריות המשותפת (Shared Responsibility Model)?",options:["האחריות על האבטחה מתחלקת בין ספק הענן (תשתית) ללקוח (נתונים ויישומים)","ספק הענן אחראי על הכל","הלקוח אחראי על הכל","האחריות מתחלקת שווה בשווה בין כל העובדים"],correct:0},
+    {question:"מהו ההבדל בין IaaS, PaaS ו-SaaS?",options:["IaaS מספק תשתית, PaaS מספק פלטפורמת פיתוח, SaaS מספק תוכנה מוכנה","כולם אותו דבר","SaaS הוא היקר ביותר תמיד","PaaS אינו תומך באבטחה"],correct:0},
+    {question:"ב-Shared Responsibility Model, מי אחראי על \"הגנת הנתונים\" בכל המודלים?",options:["ספק הענן בלבד","הלקוח (הארגון) אחראי על הגנת הנתונים שלו בכל המודלים","רק במודל SaaS","אף אחד לא"],correct:1},
+    {question:"מהו \"Misconfiguration\" ומדוע הוא מסוכן בענן?",options:["הגדרה שגויה של שירותי ענן (כמו S3 Bucket פתוח) החושפת נתונים רגישים","סיסמה חלשה בלבד","וירוס במחשב הלקוח","חיבור איטי לאינטרנט"],correct:0},
+    {question:"מהו VPC (Virtual Private Cloud)?",options:["רשת פרטית וירטואלית מבודדת לוגית בתוך הענן הציבורי","סוג של הצפנה","כלי לניהול משתמשים","פרוטוקול תקשורת חדש"],correct:0},
+    {question:"מה ההבדל בין Security Group ל-NACL בענן?",options:["Security Group הוא Stateful ופועל ברמת ה-Instance, NACL הוא Stateless ופועל ברמת ה-Subnet","אין הבדל","NACL מהיר יותר","Security Group פועל רק על נתונים מוצפנים"],correct:0},
+    {question:"מהו ההבדל בין Cloud ציבורי, פרטי והיברידי?",options:["ציבורי: משותף, פרטי: ייעודי לארגון אחד, היברידי: שילוב של שניהם","ציבורי יקר יותר תמיד","פרטי אינו מאובטח","היברידי אינו חוקי"],correct:0},
+    {question:"מהי חשיבות ה-Logging וה-Monitoring בענן?",options:["אין חשיבות מיוחדת","מאפשרים זיהוי פעילות חריגה, חקירת אירועים ועמידה בדרישות רגולטוריות","מאטים את המערכת","משמשים רק לגיבוי נתונים"],correct:1},
+    {question:"מהו \"Identity as the New Perimeter\" בהקשר של ענן?",options:["בענן, הזהות (משתמש/מכשיר) הופכת לגבול האבטחה העיקרי","סיסמאות הן הדבר היחיד שחשוב","אין צורך באימות בענן","הגבול הפיזי עדיין חשוב יותר"],correct:0},
+    {question:"איזה סוג התקפה נפוץ במיוחד בענן עקב הגדרות שגויות?",options:["Data Leak עקב Storage פתוח לציבור (כמו S3 Bucket)","התקפות פיזיות על חוות שרתים","גניבת חומרה","התקפות DDoS פיזיות"],correct:0},
+    {question:"מהי מטרת השימוש ב-Encryption בענן?",options:["להאיץ את העברת הנתונים","להגן על סודיות ושלמות הנתונים הן במנוחה (At Rest) והן בתעבורה (In Transit)","לצמצם את עלויות האחסון","להקל על ניהול המשתמשים"],correct:1},
+    {question:"מהו ההבדל בין Multi-tenancy ל-Single-tenancy?",options:["Multi-tenancy: מספר לקוחות חולקים תשתית (עם הפרדה לוגית), Single: ייעודי ללקוח אחד","Multi-tenancy יקר יותר","Single-tenancy פחות מאובטח","אין הבדל ביטחוני"],correct:0},
+    {question:"מהו \"Vendor Lock-in\" ומה הסיכון בו?",options:["קושי לעבור בין ספקי ענן שונים עקב תלות בטכנולוגיות ייחודיות","נעילת שרתים פיזית","סיסמה שנשכחה","הגבלת גישה למשתמשים"],correct:0},
+    {question:"איזה עקרון אבטחה חשוב במיוחד בניהול הרשאות בענן?",options:["מתן הרשאות ניהול לכולם","Least Privilege - מתן ההרשאות המינימליות הנדרשות","שימוש בסיסמה אחת לכל השירותים","אי-שימוש באימות דו-שלבי"],correct:1},
+    {question:"מהו ההבדל בין Data at Rest, In Transit, ו-In Use?",options:["At Rest: מאוחסנים, In Transit: מועברים ברשת, In Use: מעובדים בזיכרון","כולם אותו דבר","In Transit הוא המסוכן ביותר","At Rest אינו דורש הצפנה"],correct:0},
+    {question:"מהי חשיבות ה-Compliance בענן?",options:["אין חשיבות מיוחדת","עמידה בתקנים ורגולציה (כמו GDPR, HIPAA) להגנה על נתונים רגישים","רק משפר את הביצועים","משמש רק לגיבויים"],correct:1},
+    {question:"מהו \"Auto-scaling\" וכיצד הוא תורם לאבטחה?",options:["מאפשר הוספה אוטומטית של משאבים לפי עומס, מסייע בהתמודדות עם DDoS","מצפין נתונים באופן אוטומטי","מוחק נתונים ישנים","משנה סיסמאות אוטומטית"],correct:0},
+    {question:"מהו ההבדל בין Region ל-Availability Zone (AZ) בענן?",options:["Region הוא אזור גיאוגרפי רחב, AZ הוא מרכז נתונים מבודד פיזית בתוך Region","Region קטן יותר מ-AZ","אין הבדל","AZ משמש רק לגיבויים"],correct:0},
+    {question:"איזה כלי בענן מאפשר ניטור וניהול אירועי אבטחה?",options:["Microsoft Word","שירותי Logging וניטור כמו AWS CloudTrail, Azure Monitor, או SIEM","Excel","כלי עריכת תמונות"],correct:1}
+  ]},
+
+  p8:{title:"📊 מצגת 9: הצפנה בעולם הסייבר",desc:"20 שאלות על AES, RSA, Hash, TLS, חתימות דיגיטליות",q:[
+    {question:"מהו ההבדל בין Plaintext ל-Ciphertext?",options:["Plaintext הוא טקסט קריא, Ciphertext הוא טקסט מוצפן ולא קריא","Plaintext הוא מוצפן, Ciphertext הוא קריא","אין הבדל","Plaintext משמש רק להעברת נתונים"],correct:0},
+    {question:"מהו עקרון קרקהופס (Kerckhoffs's Principle)?",options:["אבטחה צריכה להסתמך על סודיות האלגוריתם","אבטחה צריכה להסתמך על סודיות המפתח בלבד, לא על סודיות האלגוריתם","יש להשתמש רק בהצפנה סימטרית","אין צורך במפתחות הצפנה"],correct:1},
+    {question:"מהו ההבדל בין הצפנה סימטרית לא-סימטרית?",options:["סימטרית: מפתח אחד, א-סימטרית: זוג מפתחות (ציבורי ופרטי)","סימטרית יקרה יותר","א-סימטרית מהירה יותר","אין הבדל בביצועים"],correct:0},
+    {question:"איזו הצפנה מתאימה להצפנת כמויות גדולות של נתונים?",options:["הצפנה א-סימטרית (כמו RSA)","הצפנה סימטרית (כמו AES) בגלל מהירותה","פונקציית Hash בלבד","אין צורך בהצפנה לנתונים גדולים"],correct:1},
+    {question:"מהו תפקידו של מפתח ציבורי (Public Key) בהצפנה א-סימטרית?",options:["להצפין נתונים שרק בעל המפתח הפרטי יכול לפענח, ולאמת חתימות","לפענח נתונים שהוצפנו עם המפתח הפרטי","לשמש כסיסמה למערכת","לאחסן נתונים רגישים"],correct:0},
+    {question:"מהו תפקידו של מפתח פרטי (Private Key) בהצפנה א-סימטרית?",options:["להצפין נתונים לשימוש ציבורי","לפענח נתונים שהוצפנו עם המפתח הציבורי, וליצור חתימות דיגיטליות","לשמש כשם משתמש","לגבות נתונים"],correct:1},
+    {question:"מהי הצפנה היברידית ומדוע משתמשים בה?",options:["שילוב הצפנה סימטרית וא-סימטרית: א-סימטרית להעברת מפתח, סימטרית להצפנת נתונים","הצפנה עם שני מפתחות סימטריים","הצפנה ללא מפתחות","הצפנה רק לנתונים קטנים"],correct:0},
+    {question:"מהו AES ומדוע הוא נחשב סטנדרט?",options:["אלגוריתם הצפנה סימטרי חזק ומהיר שאומץ כסטנדרט על ידי NIST","פרוטוקול תקשורת","סוג של התקפת סייבר","כלי לניהול מפתחות"],correct:0},
+    {question:"מהו תפקידה של פונקציית Hash?",options:["להצפין נתונים כך שניתן יהיה לפענח אותם","ליצור \"טביעת אצבע\" ייחודית לנתונים, לבדיקת שלמות, ולא ניתן להפוך","לנהל מפתחות הצפנה","להאיץ העברת נתונים"],correct:1},
+    {question:"מהי חתימה דיגיטלית וכיצד היא עובדת?",options:["יצירת Hash של המסר והצפנתו עם המפתח הפרטי, לאימות מקור ושלמות","סריקה של חתימה ידנית","הצפנת המסר כולו עם מפתח ציבורי","שימוש בסיסמה למסמך"],correct:0},
+    {question:"מהו ההבדל בין אימות (Authentication) לאי-הכחשה (Non-repudiation)?",options:["אימות מוודא זהות, אי-הכחשה מונעת מהשולח להכחיש ששלח את המסר","אין הבדל","אימות משמש רק להצפנה","אי-הכחשה משמשת רק לגיבויים"],correct:0},
+    {question:"מהו פרוטוקול TLS/SSL ומדוע הוא חשוב?",options:["פרוטוקול המספק הצפנה, אימות ושלמות לתעבורת רשת","פרוטוקול להעברת קבצים בלבד","פרוטוקול לניהול משתמשים","פרוטוקול לגיבוי נתונים"],correct:0},
+    {question:"מהו תהליך ה-Handshake בפרוטוקול TLS?",options:["שלב ראשוני שבו מסכימים על פרמטרי הצפנה, מאמתים, ויוצרים מפתח סימטרי","העברת הנתונים המוצפנים עצמם","ניתוק החיבור לאחר העברת נתונים","גיבוי המפתחות"],correct:0},
+    {question:"מהו \"Perfect Forward Secrecy\" (PFS)?",options:["פריצת מפתח פרטי בעתיד לא תאפשר פענוח של תעבורה עבר, כי נעשה שימוש במפתחות זמניים","הצפנה שאינה דורשת מפתחות","שימוש באותו מפתח לכל התקשורת","הצפנה רק לנתונים רגישים"],correct:0},
+    {question:"מהו Kerberos וכיצד הוא פועל?",options:["פרוטוקול אימות מרכזי המשתמש ב-\"כרטיסים\" (Tickets) מוצפנים לאימות ללא העברת סיסמאות","סוג של התקפת סייבר","כלי להצפנת דיסקים","פרוטוקול להעברת קבצים"],correct:0},
+    {question:"מהו ההבדל בין הצפנה \"At Rest\" ל-\"In Transit\"?",options:["At Rest: נתונים מאוחסנים, In Transit: נתונים מועברים ברשת - שניהם דורשים הגנה","At Rest חשוב יותר","In Transit אינו דורש הצפנה","אין הבדל"],correct:0},
+    {question:"מהו תפקידו של KMS (Key Management System)?",options:["ניהול מאובטח של מחזור החיים של מפתחות הצפנה","הצפנת נתונים בפועל","יצירת גיבויים","ניטור תעבורת רשת"],correct:0},
+    {question:"מהי התקפת \"Man-in-the-Middle\" וכיצד הצפנה מסייעת?",options:["תוקף מיירט תעבורה; הצפנה (כמו TLS) מונעת קריאה או שינוי","התקפה על שרת מרכזי","התקפה המוחקת נתונים","הצפנה אינה מסייעת"],correct:0},
+    {question:"מהו \"Crypto-agility\" ומדוע הוא חשוב?",options:["היכולת לעבור בין אלגוריתמי הצפנה במהירות בתגובה להתפתחויות אבטחה","מהירות ההצפנה עצמה","שימוש באלגוריתם אחד לכל החיים","הצפנה רק לנתונים קטנים"],correct:0},
+    {question:"מהו הסיכון בשימוש באלגוריתמי הצפנה מיושנים (כמו DES או MD5)?",options:["הם איטיים מדי","הם נפרצו או נחלשו קריפטוגרפית ואינם מספקים הגנה מספקת","הם יקרים ליישום","הם אינם נתמכים על ידי מערכות מודרניות"],correct:1}
+  ]},
+
+  p9:{title:"📊 מצגת 10: אימות וניהול זהויות (IAM)",desc:"20 שאלות על MFA, SSO, RBAC, Zero Trust, פדרציה",q:[
+    {question:"מהו IAM (Identity and Access Management)?",options:["תהליך וטכנולוגיות לניהול זהויות משתמשים והרשאות גישה","כלי להצפנת נתונים","פרוטוקול תקשורת","מערכת לגיבוי נתונים"],correct:0},
+    {question:"מהו ההבדל בין Authentication ל-Authorization?",options:["Authentication מוודא \"מי אתה\", Authorization קובע \"מה מותר לך לעשות\"","אין הבדל","Authentication משמש רק לסיסמאות","Authorization משמש רק להצפנה"],correct:0},
+    {question:"מהם שלושת גורמי האימות (Factors of Authentication)?",options:["משהו שאתה יודע, משהו שיש לך, משהו שאתה (ביומטריה)","שם משתמש, סיסמה, אימייל","הצפנה, חתימה, גיבוי","רשת, שרת, משתמש"],correct:0},
+    {question:"מהו MFA (Multi-Factor Authentication) ומדוע הוא חשוב?",options:["שימוש בשני גורמי אימות או יותר, שמקטין דרמטית את הסיכון לפריצות סיסמה","שימוש בסיסמה אחת חזקה","אימות באמצעות אימייל בלבד","אימות פעם אחת בלבד"],correct:0},
+    {question:"מהו עקרון \"Least Privilege\" (ההרשאה המינימלית)?",options:["מתן למשתמש רק ההרשאות ההכרחיות לביצוע תפקידו","מתן הרשאות ניהול לכולם","שימוש בסיסמה אחת לכל המערכות","אי-שימוש באימות דו-שלבי"],correct:0},
+    {question:"מהו Identity Lifecycle ומה שלביו העיקריים?",options:["Joiner, Mover, Leaver - ניהול זהות לאורך כל שהות המשתמש בארגון","יצירת סיסמה, שימוש, מחיקה","אימות, הרשאה, ניטור","הצפנה, גיבוי, שחזור"],correct:0},
+    {question:"מהו ההבדל בין RBAC ל-ABAC?",options:["RBAC מבוסס על תפקידים (Role), ABAC מבוסס על תכונות (Attributes) כמו זמן, מיקום","RBAC מהיר יותר","ABAC פשוט יותר לניהול","אין הבדל"],correct:0},
+    {question:"מהו SSO (Single Sign-On) ומה יתרונו?",options:["אימות פעם אחת המאפשר גישה למספר מערכות ללא כניסה חוזרת","שימוש בסיסמה אחת לכל החיים","אימות רק דרך אימייל","ביטול הצורך בסיסמאות"],correct:0},
+    {question:"מהו ההבדל בין פדרציה (Federation) ל-SSO?",options:["SSO בתוך ארגון, פדרציה מאפשרת שימוש בזהות מארגון אחד לגישה בארגון אחר","אין הבדל","פדרציה פחות מאובטחת","SSO משמש רק לענן"],correct:0},
+    {question:"מהו פרוטוקול SAML ומדוע הוא חשוב?",options:["סטנדרט להעברת נתוני אימות והרשאות בין IdP ל-SP לאימות פדרטיבי","פרוטוקול להעברת קבצים","פרוטוקול להצפנת נתונים","פרוטוקול לגיבוי"],correct:0},
+    {question:"מהו ההבדל בין פרוטוקול OAuth ל-OpenID Connect (OIDC)?",options:["OAuth מיועד להרשאות גישה (Authorization), OIDC מיועד לאימות זהות (Authentication)","אין הבדל","OAuth משמש רק לסיסמאות","OIDC פחות מאובטח"],correct:0},
+    {question:"מהו PAM (Privileged Access Management)?",options:["ניהול מאובטח של חשבונות עם הרשאות גבוהות (Admin), כולל אחסון מפתחות וניטור","ניהול סיסמאות רגילות של משתמשים","כלי להצפנת נתונים","מערכת לגיבוי נתונים"],correct:0},
+    {question:"מהו \"Just-in-Time\" (JIT) Access?",options:["מתן הרשאות גבוהות רק לזמן מוגבל ולפי צורך, לצמצום סיכון","מתן הרשאות לכולם באופן מיידי","ביטול הצורך בהרשאות","שימוש בסיסמה אחת לכל המערכות"],correct:0},
+    {question:"מהו ההבדל בין Machine Identity ל-User Identity?",options:["Machine Identity מתייחס לזהות של שירותים, אפליקציות או מכשירים (לא בני אדם)","אין הבדל","Machine Identity פחות חשוב","User Identity משמש רק להצפנה"],correct:0},
+    {question:"מהו \"Passwordless Authentication\"?",options:["אימות ללא סיסמה מסורתית, באמצעות ביומטריה, טוקנים או מפתחות אבטחה (כמו FIDO2)","שימוש בסיסמה ריקה","ביטול כל צורך באימות","שימוש באותה סיסמה לכל המערכות"],correct:0},
+    {question:"מהו \"Zero Trust\" וכיצד IAM תורם לו?",options:["מודל שאינו סומך על אף גורם; IAM מספק אימות מתמיד והרשאות מבוססות הקשר","מודל המאפשר גישה חופשית","מודל המתעלם מאיומים פנימיים","IAM אינו קשור ל-Zero Trust"],correct:0},
+    {question:"מהו ההבדל בין IDaaS ל-IAM מסורתי?",options:["IDaaS הוא שירות ענן לניהול זהויות, המציע גמישות ופחות תחזוקה","אין הבדל","IDaaS פחות מאובטח","IAM מסורתי משמש רק לענן"],correct:0},
+    {question:"מהי חשיבות ה-Logging וה-Auditing ב-IAM?",options:["תיעוד פעולות אימות והרשאות לחקירת אירועים, רגולציה וזיהוי פעילות חריגה","אין חשיבות מיוחדת","מאט את המערכת","משמש רק לגיבוי נתונים"],correct:0},
+    {question:"מהו \"Service Account\" ומה הסיכון בו?",options:["חשבון המשמש אפליקציות; מסוכן כי לרוב יש לו הרשאות גבוהות, סיסמאות סטטיות ופחות ניטור","חשבון משתמש רגיל","חשבון גיבוי בלבד","חשבון ללא הרשאות"],correct:0},
+    {question:"מהו ההבדל בין Directory Service ל-IAM מודרני?",options:["Directory מספק מאגר מרכזי, IAM מודרני מרחיב זאת לענן, אפליקציות חיצוניות וניהול מורכב","אין הבדל","Directory משמש רק לענן","IAM מודרני פחות מאובטח"],correct:0}
+  ]},
+
+  p10:{title:"📊 מצגת 11: שיעור חזרה והכנה למבחן",desc:"20 שאלות סיכום מכל המצגות - חזרה כללית",q:[
+    {question:"לפי מודל CIA, מה נפגע בהתקפת \"Sniffing\" על תעבורה לא מוצפנת?",options:["Availability (זמינות)","Integrity (שלמות)","Confidentiality (סודיות)","Authentication (אימות)"],correct:2},
+    {question:"מהו ההבדל בין \"Threat\" ל-\"Vulnerability\"?",options:["Threat הוא גורם שיכול לנצל פגיעות, Vulnerability היא נקודת תורפה במערכת","אין הבדל","Threat הוא פגיעות, Vulnerability הוא גורם מאיים","Threat משמש רק להתקפות פיזיות"],correct:0},
+    {question:"לפי נוסחת הסיכון, Impact=4 ו-Probability=0.5, מה הסיכון?",options:["2.0","4.5","0.2","9.0"],correct:0},
+    {question:"מהו \"Attack Surface\" וכיצד מצמצמים אותו?",options:["סך כל נקודות הגישה האפשריות; מצמצמים על ידי הסרת שירותים מיותרים ויישום Least Privilege","גודל הדיסק; מצמצמים על ידי מחיקת קבצים","מספר המשתמשים; מצמצמים על ידי פיטורים","מהירות הרשת; מצמצמים על ידי הגבלת רוחב פס"],correct:0},
+    {question:"מהו ההבדל בין התקפה \"Passive\" ל-\"Active\"?",options:["Passive: האזנה ללא שינוי, Active: שינוי, מחיקה או הוספת נתונים","Passive מסוכנת יותר","Active פועלת רק על רשתות אלחוטיות","אין הבדל"],correct:0},
+    {question:"מהו ההבדל בין DoS ל-DDoS?",options:["DoS ממקור אחד, DDoS ממקורות רבים ומבוזרים (Botnet)","DoS מסוכן יותר","DDoS פועל רק על רשתות קוויות","אין הבדל"],correct:0},
+    {question:"מהו \"Zero Day\" בהקשר של אבטחת מידע?",options:["פגיעות שטרם פורסם לה תיקון ויכולה להיות מנוצלת","יום ללא התקפות","תאריך תפוגה של רישיון תוכנה","יום הגיבוי השבועי"],correct:0},
+    {question:"מהו ההבדל בין \"Hash\" ל-\"Encryption\"?",options:["Hash חד-כיווני (לא ניתן לפענח), Encryption דו-כיווני (ניתן לפענח עם מפתח)","אין הבדל","Hash משמש להצפנה","Hash מהיר יותר אך פחות מאובטח"],correct:0},
+    {question:"מהו ההבדל בין \"Authentication\" ל-\"Authorization\"?",options:["Authentication מוודא \"מי אתה\", Authorization קובע \"מה מותר לך לעשות\"","אין הבדל","Authentication משמש רק לסיסמאות","Authorization משמש רק להצפנה"],correct:0},
+    {question:"מהו \"Phishing\" וכיצד מגנים מפניו?",options:["ניסיון להונות משתמשים לחשוף מידע; מגנים בחינוך, MFA, וסינון אימיילים","התקפה על שרתים פיזיים","הצפנת נתונים","אין דרך להגן"],correct:0},
+    {question:"מהו \"RTO\" ו-\"RPO\" בתוכנית התאוששות מאסון?",options:["RTO: הזמן המרבי להחזרה, RPO: כמות הנתונים המרבית שניתן לאבד","RTO: כמות הנתונים, RPO: הזמן","RTO: עלות, RPO: זמן","אין הבדל"],correct:0},
+    {question:"מהו \"Insider Threat\" וכיצד מזהים אותו?",options:["איום מאדם בתוך הארגון; מזהים בניטור פעילות חריגה ובקרת הרשאות","איום חיצוני בלבד","אין דרך לזהותו","Insider Threat אינו מסוכן"],correct:0},
+    {question:"מהו ההבדל בין \"Virus\" ל-\"Worm\"?",options:["Virus דורש הפעלה ידנית, Worm מתפשט אוטומטית ברשת ללא התערבות משתמש","Virus מסוכן יותר","Worm פועל רק על מערכות מסוימות","אין הבדל"],correct:0},
+    {question:"מהו \"Social Engineering\" וכיצד מגנים מפניו?",options:["מניפולציה פסיכולוגית להשיג מידע; מגנים בחינוך, מדיניות ואימות זהויות","התקפה טכנולוגית בלבד","אין דרך להגן","Social Engineering אינו מסוכן"],correct:0},
+    {question:"מהו \"SQL Injection\" וכיצד מגנים מפניו?",options:["הזרקת קוד זדוני לשאילתות; מגנים ב-Input Validation, Prepared Statements ו-WAF","התקפה על רשתות אלחוטיות","אין דרך להגן","SQL Injection אינו מסוכן"],correct:0},
+    {question:"מהו \"Cross-Site Scripting\" (XSS) וכיצד מגנים?",options:["הזרקת קוד זדוני לדפים; מגנים ב-Sanitization, Content Security Policy ו-WAF","התקפה על שרתים פיזיים","אין דרך להגן","XSS אינו מסוכן"],correct:0},
+    {question:"מהו \"Man-in-the-Middle\" (MITM) וכיצד מגנים?",options:["יירוט תעבורה בין שני צדדים; מגנים ב-TLS/SSL, אימות ו-VPN","התקפה על שרתים בלבד","אין דרך להגן","MITM אינו מסוכן"],correct:0},
+    {question:"מהו \"Buffer Overflow\" וכיצד מגנים?",options:["כתיבה מעבר לגבולות זיכרון; מגנים ב-Input Validation, שפות מודרניות, DEP/ASLR","התקפה על רשתות אלחוטיות","אין דרך להגן","Buffer Overflow אינו מסוכן"],correct:0},
+    {question:"מהו \"Privilege Escalation\" וכיצד מגנים?",options:["ניצול פגיעות להשגת הרשאות גבוהות יותר; מגנים בעדכון, Least Privilege וניטור","התקפה על שרתים פיזיים","אין דרך להגן","Privilege Escalation אינו מסוכן"],correct:0},
+    {question:"מהו ההבדל בין \"Incident Response\" ל-\"Disaster Recovery\"?",options:["IR: תגובה וטיפול באירוע אבטחה בזמן אמת, DR: שחזור מערכות ונתונים לאחר אירוע קריטי","אין הבדל","IR משמש רק להתקפות פיזיות","DR אינו כולל אבטחת מידע"],correct:0}
+  ]}
+};
+
+// Build nav + quizzes
+(function(){
+  const nav=document.getElementById('nav');
+  const quizzesDiv=document.getElementById('quizzes');
+  let idx=0;
+  Object.entries(quizzes).forEach(([id,q])=>{
+    const n=idx+1;
+    // Nav button
+    const btn=document.createElement('button');
+    btn.className='quiz-btn'+(idx===0?' active':'');
+    btn.dataset.quiz=id;
+    btn.innerHTML=q.title.substring(0,q.title.length-2); // trim emoji prefix for cleaner look
+    btn.onclick=()=>show(id);
+    nav.appendChild(btn);
+
+    // Quiz container
+    const c=document.createElement('div');
+    c.id=id;
+    c.className='quiz-container'+(idx===0?' active':'');
+    let html=`<div class="quiz-header"><h3 class="quiz-title">${q.title}</h3><p class="quiz-desc">${q.desc}</p></div>`;
+    html+=`<div class="progress-container"><div class="progress-bar" id="pb${n}" data-progress="0%"></div></div>`;
+    html+=`<form id="f${n}">`;
+    q.q.forEach((qq,i)=>{
+      html+=`<div class="question-card"><div><span class="question-number">${i+1}</span><span class="question-text">${qq.question}</span></div><div class="options-grid">`;
+      qq.options.forEach((opt,oi)=>{
+        html+=`<label class="option-label"><input type="radio" name="q${i}" value="${oi}" required><div class="option-content"><span class="option-letter">${String.fromCharCode(65+oi)}</span><span>${opt}</span></div></label>`;
+      });
+      html+=`</div></div>`;
+    });
+    html+=`</form>`;
+    html+=`<div class="action-buttons"><button type="button" class="btn btn-primary" id="sub${n}"><i class="fas fa-paper-plane"></i> הגש</button><button type="button" class="btn btn-secondary" id="rst${n}"><i class="fas fa-redo"></i> אפס</button></div>`;
+    html+=`<div class="results-container" id="res${n}"><h3>🎉 תוצאות</h3><div class="score-display" id="sc${n}">0/20</div><p class="score-message" id="msg${n}">המשך לתרגל!</p>`;
+    html+=`<div class="score-breakdown"><div class="breakdown-item"><span class="breakdown-value correct" id="cor${n}">0</span><span class="breakdown-label">נכונות</span></div><div class="breakdown-item"><span class="breakdown-value incorrect" id="inc${n}">0</span><span class="breakdown-label">שגויות</span></div><div class="breakdown-item"><span class="breakdown-value" id="pct${n}">0%</span><span class="breakdown-label">אחוזים</span></div></div>`;
+    html+=`<div class="review-section" id="rev${n}"></div>`;
+    html+=`<div class="action-buttons"><button class="btn btn-success" id="rty${n}"><i class="fas fa-sync-alt"></i> נסה שוב</button><button class="btn btn-secondary" onclick="show('${id}')"><i class="fas fa-arrow-right"></i> חזור</button></div></div>`;
+    c.innerHTML=html;
+    quizzesDiv.appendChild(c);
+    idx++;
+  });
+
+  // Init event listeners
+  Object.entries(quizzes).forEach(([id,q],idx)=>{
+    const n=idx+1,form=document.getElementById(`f${n}`),pb=document.getElementById(`pb${n}`);
+    form.querySelectorAll('input').forEach(inp=>inp.addEventListener('change',()=>{
+      const ans=new Set();form.querySelectorAll('input:checked').forEach(i=>ans.add(i.name));
+      const p=Math.round(ans.size/20*100);pb.style.width=p+'%';pb.setAttribute('data-progress',p+'%');
+    }));
+    document.getElementById(`sub${n}`).onclick=()=>{
+      if([...Array(20)].some((_,i)=>!form.querySelector(`input[name="q${i}"]:checked`))){alert('⚠️ אנא ענה על כל השאלות!');return}
+      let cor=0,rev=[];
+      q.q.forEach((qq,i)=>{const sel=form.querySelector(`input[name="q${i}"]:checked`),ua=sel?+sel.value:-1,ok=ua===qq.correct;
+        if(ok)cor++;rev.push({q:qq.question,ua:ua>=0?qq.options[ua]:'-',ca:qq.options[qq.correct],ok})});
+      const pct=Math.round(cor/20*100);
+      document.getElementById(`sc${n}`).textContent=cor+'/20';
+      document.getElementById(`cor${n}`).textContent=cor;
+      document.getElementById(`inc${n}`).textContent=20-cor;
+      document.getElementById(`pct${n}`).textContent=pct+'%';
+      document.getElementById(`msg${n}`).textContent=pct>=90?'🌟 מצוין! אתה מוכן!':pct>=75?'👏 טוב מאוד!':pct>=60?'✅ לא רע!':'💪 המשך לתרגול!';
+      const rv=document.getElementById(`rev${n}`);rv.innerHTML='<div class="review-title"><i class="fas fa-clipboard-list"></i> סקירת תשובות</div>';
+      rev.forEach((it,i)=>{const d=document.createElement('div');d.className='review-item '+(it.ok?'correct':'incorrect');
+        d.innerHTML=`<div class="review-question">${i+1}. ${it.q}</div><div class="review-answer">${it.ok?`<i class="fas fa-check-circle correct"></i> ${it.ua}`:`<i class="fas fa-times-circle incorrect"></i> שלך: <span class="user-answer">${it.ua}</span><br><strong>נכון:</strong> <span class="correct-answer">${it.ca}</span>`}</div>`;rv.appendChild(d)});
+      document.querySelectorAll('.quiz-container').forEach(x=>x.style.display='none');
+      document.getElementById(`res${n}`).classList.add('active');
+      if(pct>=80)for(let i=0;i<80;i++){const cf=document.createElement('div');cf.className='confetti';cf.style.left=Math.random()*100+'%';cf.style.backgroundColor=['#4361ee','#7209b7','#f72585','#06d6a0','#ffd166'][Math.floor(Math.random()*5)];document.body.appendChild(cf);setTimeout(()=>cf.remove(),2500)}
+    };
+    document.getElementById(`rst${n}`).onclick=()=>{if(confirm('לאפס?')){form.reset();pb.style.width='0%';pb.setAttribute('data-progress','0%');document.getElementById(`res${n}`).classList.remove('active');show(id)}};
+    document.getElementById(`rty${n}`).onclick=()=>{form.reset();pb.style.width='0%';pb.setAttribute('data-progress','0%');document.getElementById(`res${n}`).classList.remove('active');show(id)};
+  });
+})();
+
+function show(id){
+  document.querySelectorAll('.quiz-btn').forEach(b=>b.classList.remove('active'));
+  const btn=document.querySelector(`[data-quiz="${id}"]`);if(btn)btn.classList.add('active');
+  document.querySelectorAll('.quiz-container').forEach(q=>{q.classList.remove('active');q.style.display='none'});
+  const el=document.getElementById(id);if(el){el.style.display='block';setTimeout(()=>el.classList.add('active'),10)}
+  document.querySelectorAll('.results-container').forEach(r=>r.classList.remove('active'));
+}
+  </script>
+</body>
+</html>
